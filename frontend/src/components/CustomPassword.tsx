@@ -7,7 +7,7 @@ const CustomPassword = forwardRef<HTMLInputElement, { placeholder: string }>(
     const [showPassword, setShowPassword] = useState(false);
 
     return (
-      <div className="flex h-9 w-full rounded-md border border-input bg-background shadow-sm transition-colors placeholder:text-muted-foreground focus-within:ring-1 ring-ring">
+      <div className="relative flex h-9 w-full rounded-md border border-input bg-background shadow-sm transition-colors placeholder:text-muted-foreground focus-within:ring-1 ring-ring">
         <Input
           className="h-auto border-0 focus-visible:outline-none focus-visible:ring-0 bg-background w-full"
           type={showPassword ? "text" : "password"}
@@ -17,7 +17,7 @@ const CustomPassword = forwardRef<HTMLInputElement, { placeholder: string }>(
         />
         <span
           onClick={() => setShowPassword(!showPassword)}
-          className="px-1 py-1 cursor-pointer"
+          className="px-1 py-1 cursor-pointer absolute inset-y-0 right-0 flex items-center"
         >
           {showPassword ? <EyeOff /> : <Eye />}
         </span>

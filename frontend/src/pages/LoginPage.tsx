@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/store/store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -20,6 +22,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import CustomPassword from "@/components/CustomPassword";
+import { fetchLogin } from "@/features/authSlice";
+import { toast } from "sonner";
 
 const FormSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -29,6 +33,7 @@ const FormSchema = z.object({
 });
 
 function LoginPage() {
+  const dispatch = useDispatch<AppDispatch>();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -38,7 +43,18 @@ function LoginPage() {
   });
 
   const onSubmit = (data: z.infer<typeof FormSchema>) => {
-    console.log(data);
+    const loginPromise = dispatch(fetchLogin(data)).unwrap();
+    toast.promise(loginPromise, {
+      loading: "Logging in...",
+      success: (data: any) => {
+        return `${data.message || "Logged in successfully!"}`;
+      },
+      error: (error: any) => {
+        return (
+          error || error.message || "Something went wrong while logging in"
+        );
+      },
+    });
   };
   return (
     <Card className="mx-auto max-w-sm">

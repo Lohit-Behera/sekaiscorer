@@ -2,6 +2,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import User from "../models/userModel.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadFile } from "../utils/cloudinary.js";
+import Token from "../models/tokenModel.js";
 
 const accessTokenOptions = {
     httpOnly: true,
@@ -159,6 +160,83 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(
         new ApiResponse(200, {}, "Logout successful")
     )
+})
+
+// send verify email
+const sendVerifyEmail = asyncHandler(async (req, res) => {
+    const userId = req.user._id
+
+    if (req.user.isVerified) {
+        return res.status(400).json(new ApiResponse(400, {}, "Email already verified"))
+    }
+
+    const token = await Token.findOne({ user: userId })
+
+    if (!token) {
+        await Token.create({ user: userId })
+    }
+
+    const verificationToken = await Token.findOne({ user: userId })
+
+    if (!verificationToken) {
+        return res.status(500).json(new ApiResponse(500, {}, "Something went wrong while generating verification token"))
+    }
+
+    const emailVerifyToken = verificationToken.generateVerifyEmailToken()
+
+    if (!emailVerifyToken) {
+        return res.status(500).json(new ApiResponse(500, {}, "Something went wrong while generating email verification token"))
+    }
+
+    verificationToken.token = emailVerifyToken
+    await verificationToken.save({ validateBeforeSave: false })
+
+    const verifyEmailLink = `${req.protocol + '://' + req.get('host')}/api/v1/auth/verify-email/${userId}/${emailVerifyToken}`
+
+    await sendEmail(req.user.email, "Verify Email", `
+        <h1>Verify Email</h1>
+        <p>Please click the link below to verify your email</p>
+        <a href="${verifyEmailLink}">Verify Email</a>
+    `);
+
+    return res.status(200).json(new ApiResponse(200, {}, "Email verification link sent"))
+})
+
+
+// verify email
+const verifyEmail = asyncHandler(async (req, res) => {
+    const { userId, token } = req.params
+
+    if (!userId || !token) {
+        return res.status(400).json(new ApiResponse(400, {}, "Invalid verification link"))
+    }
+
+    const user = await User.findById(userId)
+
+    if (!user) {
+        return res.status(404).json(new ApiResponse(404, {}, "User not found"))
+    }
+
+    const verifyEmailToken = await Token.findOne({ user: userId })
+
+    if (!verifyEmailToken) {
+        return res.status(404).json(new ApiResponse(404, {}, "Verification token not found"))
+    }
+
+    if (verifyEmailToken.token !== token) {
+        return res.status(401).json(new ApiResponse(401, {}, "Invalid verification token"))
+    }
+
+    if (verifyEmailToken.token.toString() !== token.toString()) {
+        return res.status(401).json(new ApiResponse(401, {}, "Invalid user"))
+    }
+
+    user.isVerified = true
+    await user.save({ validateBeforeSave: false })
+
+    await verifyEmailToken.deleteOne({ user: userId })
+
+    return res.redirect(`${process.env.FRONTEND_URL}/?verified=true`)
 })
 
 
