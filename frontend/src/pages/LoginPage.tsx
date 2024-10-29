@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import CustomPassword from "@/components/CustomPassword";
-import { fetchLogin } from "@/features/authSlice";
+import { fetchLogin } from "@/features/AuthSlice";
 import { toast } from "sonner";
 
 const FormSchema = z.object({

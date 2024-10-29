@@ -52,6 +52,7 @@ export const fetchLogin = createAsyncThunk(
         headers: {
           "Content-Type": "application/json",
         },
+        withCredentials: true,
       };
       const { data } = await axios.post(
         `${baseUrl}/api/v1/auth/login`,

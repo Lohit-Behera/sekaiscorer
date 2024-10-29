@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import CustomPassword from "@/components/CustomPassword";
-import { fetchRegister } from "@/features/authSlice";
+import { fetchRegister } from "@/features/AuthSlice";
 import { toast } from "sonner";
 
 const signUpFormSchema = z
@@ -232,7 +232,6 @@ function SignUpPage() {
             Sign in
           </Link>
         </div>
-        <div className="w-20 h-20 bg-muted"></div>
       </CardContent>
     </Card>
   );
