@@ -77,14 +77,41 @@ const getQuiz = asyncHandler(async (req, res) => {
     const { quizId } = req.params
 
     // get quiz
-    const quiz = await Quiz.findById(quizId).select("-questions")
+    const quiz = await Quiz.aggregate(
+        [
+            {
+              $lookup: {
+                from: "users",
+                localField: "createdBy",
+                foreignField: "_id",
+                as: "user"
+              }
+            },
+            {
+              $unwind: "$user",
+            },
+            {
+              $project: {
+                _id: 1,
+                title: 1,
+                description: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                thumbnail: 1,
+                category: 1,
+                difficulty: 1,
+                "createdBy": "$user.fullName"
+              }
+            }
+          ]
+    )
 
     if (!quiz) {
         return res.status(404).json(new ApiResponse(404, {}, "Quiz not found"))
     }
 
     // send response
-    res.status(200).json(new ApiResponse(200, quiz, "Quiz fetched successfully"))
+    res.status(200).json(new ApiResponse(200, quiz[0], "Quiz fetched successfully"))
 })
 
 export { createQuiz, getQuiz }

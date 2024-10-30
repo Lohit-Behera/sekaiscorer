@@ -17,6 +17,9 @@ const quizSchema = new Schema(
         enum: ['easy', 'medium', 'hard'],
         default: 'easy'
     },
+    thumbnail: {
+        type: String
+    },
     questions: {
         type: Array,
         required: true

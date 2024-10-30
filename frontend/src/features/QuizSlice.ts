@@ -12,6 +12,22 @@ type Quiz = {
   questions: Question[];
 };
 
+type GetQuiz = {
+  statusCode: number;
+  message: string;
+  data: {
+    _id: string;
+    title: string;
+    description: string;
+    category: string;
+    difficulty: string;
+    thumbnail: string;
+    createdBy: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
 export const fetchCreateQuiz = createAsyncThunk(
   "create/quiz",
   async (quiz: Quiz, { rejectWithValue }) => {
@@ -38,12 +54,41 @@ export const fetchCreateQuiz = createAsyncThunk(
   }
 );
 
+export const fetchGetQuiz = createAsyncThunk(
+  "get/quiz",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      };
+      const { data } = await axios.get(
+        `${baseUrl}/api/v1/quizzes/get/${id}`,
+        config
+      );
+      return data;
+    } catch (error: any) {
+      const errorMessage =
+        error.response && error.response.data
+          ? error.response.data.message
+          : error.message;
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 const quizSlice = createSlice({
   name: "quiz",
   initialState: {
     createQuiz: { data: {} },
     createQuizStatus: "idle",
     createQuizError: {},
+
+    getQuiz: null as GetQuiz | null,
+    getQuizStatus: "idle",
+    getQuizError: {},
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -58,6 +103,18 @@ const quizSlice = createSlice({
       .addCase(fetchCreateQuiz.rejected, (state, action) => {
         state.createQuizStatus = "failed";
         state.createQuizError = action.payload || "Create quiz failed";
+      })
+
+      .addCase(fetchGetQuiz.pending, (state) => {
+        state.getQuizStatus = "loading";
+      })
+      .addCase(fetchGetQuiz.fulfilled, (state, action) => {
+        state.getQuizStatus = "succeeded";
+        state.getQuiz = action.payload;
+      })
+      .addCase(fetchGetQuiz.rejected, (state, action) => {
+        state.getQuizStatus = "failed";
+        state.getQuizError = action.payload || "Get quiz failed";
       });
   },
 });

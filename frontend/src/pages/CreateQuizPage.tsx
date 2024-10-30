@@ -100,7 +100,11 @@ function CreateQuizPage() {
         success: (data: any) => {
           quizForm.reset();
           setQuestions([]);
-
+          setQuestion({
+            questionText: "",
+            options: ["", "", "", ""],
+            correctAnswer: "",
+          });
           return data.message || "Quiz created successfully!";
         },
         error: (error: any) => {

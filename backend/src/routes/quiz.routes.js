@@ -8,6 +8,6 @@ const router = Router();
 
 router.post("/create", authMiddleware, upload.single("thumbnail"), resizeImage, createQuiz);
 
-router.get("/get/:quizId", authMiddleware, createQuiz);
+router.get("/get/:quizId", authMiddleware, getQuiz);
 
 export default router
