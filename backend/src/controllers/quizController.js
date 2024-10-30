@@ -7,10 +7,7 @@ import Quiz from "../models/quizModel.js";
 const createQuiz = asyncHandler(async (req, res) => {
     // get data from req.body
     const { title, description, category, difficulty, questions } = req.body;
-    console.log(title, description, category, difficulty, questions);
-    console.log(typeof questions[0].correctAnswer);
     
-
     // validate data
     if (!title || !description || !category || !difficulty || !questions) {
         return res.status(400).json(new ApiResponse(400, {}, "All fields are required"))
@@ -31,16 +28,13 @@ const createQuiz = asyncHandler(async (req, res) => {
             return res.status(400).json(new ApiResponse(400, {}, "At least 2 options are required"))
         } else if (question.options.length !== new Set(question.options).size) {
             return res.status(400).json(new ApiResponse(400, {}, "Options must be unique"))
-        } else if (Number(question.correctAnswer) < 0 || Number(question.correctAnswer) >= Number(question.options).length) {
-            return res.status(400).json(new ApiResponse(400, {}, "Correct answer must be between 0 and number of options"))
+        } else if (!question.options.includes(question.correctAnswer)) {
+            return res.status(400).json(new ApiResponse(400, {}, "Correct answer must be one of the options"))
         }
     })
 
     // get thumbnail from req.files
     const thumbnailFile = req.file
-
-    console.log(thumbnailFile);
-    
 
     // validate thumbnail
     if (!thumbnailFile) {
@@ -64,7 +58,7 @@ const createQuiz = asyncHandler(async (req, res) => {
         difficulty,
         questions,
         thumbnail: thumbnailURL,
-        user: user._id
+        createdBy: user
     })
 
     // validate if quiz is created
@@ -78,4 +72,19 @@ const createQuiz = asyncHandler(async (req, res) => {
     res.status(201).json(new ApiResponse(201, {}, "Quiz created successfully"))
 })
 
-export { createQuiz }
+const getQuiz = asyncHandler(async (req, res) => {
+    // get id from params
+    const { quizId } = req.params
+
+    // get quiz
+    const quiz = await Quiz.findById(quizId).select("-questions")
+
+    if (!quiz) {
+        return res.status(404).json(new ApiResponse(404, {}, "Quiz not found"))
+    }
+
+    // send response
+    res.status(200).json(new ApiResponse(200, quiz, "Quiz fetched successfully"))
+})
+
+export { createQuiz, getQuiz }

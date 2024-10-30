@@ -17,12 +17,10 @@ const quizSchema = new Schema(
         enum: ['easy', 'medium', 'hard'],
         default: 'easy'
     },
-    questions: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: 'Question'
-        }
-    ],
+    questions: {
+        type: Array,
+        required: true
+    },
     createdBy: { 
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

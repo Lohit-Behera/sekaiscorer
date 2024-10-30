@@ -98,6 +98,9 @@ function CreateQuizPage() {
       toast.promise(quizPromise, {
         loading: "Creating quiz...",
         success: (data: any) => {
+          quizForm.reset();
+          setQuestions([]);
+
           return data.message || "Quiz created successfully!";
         },
         error: (error: any) => {
@@ -115,10 +118,16 @@ function CreateQuizPage() {
       toast.warning("Please enter a question.");
     } else if (question.options[0] === "" || question.options[1] === "") {
       toast.warning("Please enter at least 2 options.");
-    } else if (question.options.includes(question.correctAnswer)) {
+    } else if (!question.options.includes(question.correctAnswer)) {
       toast.warning("Please select a correct answer.");
     } else {
-      setQuestions([...questions, question]);
+      const newOptions = question.options.filter((option) => option !== "");
+      const newQuestion: Question = {
+        questionText: question.questionText,
+        correctAnswer: question.correctAnswer,
+        options: newOptions,
+      };
+      setQuestions([...questions, newQuestion]);
       setQuestion({
         questionText: "",
         options: ["", "", "", ""],
@@ -370,11 +379,8 @@ function CreateQuizPage() {
                       of the options.
                     </p>
                     <Input
-                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       id="correctAnswer"
-                      type="number"
-                      min={1}
-                      max={4}
+                      type="text"
                       value={question.correctAnswer}
                       placeholder="Correct Answer"
                       onChange={(e) =>
