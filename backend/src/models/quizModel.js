@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const quizSchema = new Schema(
     {
@@ -34,6 +35,7 @@ const quizSchema = new Schema(
     timestamps: true,
   }
 );
+quizSchema.plugin(mongooseAggregatePaginate);
 
 const Quiz = mongoose.model("Quiz", quizSchema);
 

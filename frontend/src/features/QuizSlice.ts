@@ -28,6 +28,34 @@ type GetQuiz = {
   };
 };
 
+type QuizAll = {
+  _id: string;
+  title: string;
+  category: string;
+  difficulty: string;
+  thumbnail: string;
+  createdAt: string;
+  createdBy: string;
+};
+
+type GetQuizzes = {
+  statusCode: number;
+  message: string;
+  success: boolean;
+  data: {
+    totalDocs: number;
+    limit: number;
+    page: number;
+    totalPages: number;
+    pagingCounter: number;
+    hasPrevPage: boolean;
+    hasNextPage: boolean;
+    prevPage: null | number;
+    nextPage: null | number;
+    docs: QuizAll[];
+  };
+};
+
 export const fetchCreateQuiz = createAsyncThunk(
   "create/quiz",
   async (quiz: Quiz, { rejectWithValue }) => {
@@ -79,6 +107,28 @@ export const fetchGetQuiz = createAsyncThunk(
   }
 );
 
+export const fetchGetAllQuizzes = createAsyncThunk(
+  "get/allQuizzes",
+  async (_, { rejectWithValue }) => {
+    try {
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      };
+      const { data } = await axios.get(`${baseUrl}/api/v1/quizzes/all`, config);
+      return data;
+    } catch (error: any) {
+      const errorMessage =
+        error.response && error.response.data
+          ? error.response.data.message
+          : error.message;
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 const quizSlice = createSlice({
   name: "quiz",
   initialState: {
@@ -89,6 +139,10 @@ const quizSlice = createSlice({
     getQuiz: null as GetQuiz | null,
     getQuizStatus: "idle",
     getQuizError: {},
+
+    getAllQuizzes: null as GetQuizzes | null,
+    getAllQuizzesStatus: "idle",
+    getAllQuizzesError: {},
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -115,6 +169,18 @@ const quizSlice = createSlice({
       .addCase(fetchGetQuiz.rejected, (state, action) => {
         state.getQuizStatus = "failed";
         state.getQuizError = action.payload || "Get quiz failed";
+      })
+
+      .addCase(fetchGetAllQuizzes.pending, (state) => {
+        state.getAllQuizzesStatus = "loading";
+      })
+      .addCase(fetchGetAllQuizzes.fulfilled, (state, action) => {
+        state.getAllQuizzesStatus = "succeeded";
+        state.getAllQuizzes = action.payload;
+      })
+      .addCase(fetchGetAllQuizzes.rejected, (state, action) => {
+        state.getAllQuizzesStatus = "failed";
+        state.getAllQuizzesError = action.payload || "Get all quiz failed";
       });
   },
 });

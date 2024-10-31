@@ -114,4 +114,50 @@ const getQuiz = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, quiz[0], "Quiz fetched successfully"))
 })
 
-export { createQuiz, getQuiz }
+const getAllQuizzes = asyncHandler(async (req, res) => {
+
+    // option for pagination
+    const options = {
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 10
+    }
+
+    // get all quizzes
+    const aggregate = Quiz.aggregate(
+        [
+            {
+              $lookup: {
+                from: "users",
+                localField: "createdBy",
+                foreignField: "_id",
+                as: "user"
+              }
+            },
+            {
+              $unwind: "$user",
+            },
+            {
+              $project: {
+                _id: 1,
+                title: 1,
+                createdAt: 1,
+                thumbnail: 1,
+                category: 1,
+                difficulty: 1,
+                "createdBy": "$user.fullName"
+              }
+            }
+        ]
+    )
+
+    const quizzes = await Quiz.aggregatePaginate(aggregate, options)
+
+    if (!quizzes) {
+        return res.status(404).json(new ApiResponse(404, {}, "Quizzes not found"))
+    }
+
+    // send response
+    res.status(200).json(new ApiResponse(200, quizzes, "Quizzes fetched successfully"))
+})
+
+export { createQuiz, getQuiz, getAllQuizzes }
