@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
 import { fetchGetAllQuizzes } from "@/features/QuizSlice";
@@ -37,15 +38,19 @@ function HomePage() {
                   : "bg-red-300/50 dark:bg-red-800/50"
               }`}
             >
-              <div>
-                <img
-                  className="w-full h-44 object-cover rounded-t-lg"
-                  src={quiz.thumbnail}
-                  alt=""
-                />
+              <div className="w-full h-44">
+                <Link to={`/quiz/${quiz._id}`}>
+                  <img
+                    className="w-full h-full object-cover rounded-t-lg hover:scale-105 duration-300"
+                    src={quiz.thumbnail}
+                    alt=""
+                  />
+                </Link>
               </div>
               <div className="p-2 md:p-4">
-                <h3 className="text-base md:text-lg font-bold">{quiz.title}</h3>
+                <h3 className="text-base md:text-lg font-bold hover:underline">
+                  <Link to={`/quiz/${quiz._id}`}>{quiz.title}</Link>
+                </h3>
                 <p className="text-xs md:text-sm text-muted-foreground">
                   Created By: {quiz.createdBy} <br />
                   {format(quiz.createdAt, "PPP")}
